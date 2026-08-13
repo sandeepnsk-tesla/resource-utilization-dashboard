@@ -71,6 +71,42 @@ function buildBufferConfigs(state: AppState): Map<string, BufferConfig> {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: Enrich timesheets with project names from workbook metadata
+// When entry.projectName is empty, inherit from the workbook's projectName
+// ---------------------------------------------------------------------------
+
+function enrichTimesheetsWithProjectNames(state: AppState): typeof state.timesheets {
+  // Build a map of workbookId → projectName from metadata
+  const workbookProjectMap = new Map<string, string>();
+  for (const wb of state.workbooks) {
+    if (wb.projectName && wb.projectName !== 'Unknown Project') {
+      workbookProjectMap.set(wb.id, wb.projectName);
+    }
+  }
+
+  // If no workbooks have project names, return as-is
+  if (workbookProjectMap.size === 0) return state.timesheets;
+
+  return state.timesheets.map((ts) => {
+    const wbProjectName = workbookProjectMap.get(ts.workbookId);
+    if (!wbProjectName) return ts;
+
+    // Check if any entries have empty project names
+    const hasEmptyProjects = ts.entries.some((e) => !e.projectName || !e.projectName.trim());
+    if (!hasEmptyProjects) return ts;
+
+    // Fill in empty project names with workbook's project name
+    return {
+      ...ts,
+      entries: ts.entries.map((e) => ({
+        ...e,
+        projectName: (e.projectName && e.projectName.trim()) ? e.projectName : wbProjectName,
+      })),
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Selector: Aggregated resource data from raw timesheets + config
 // ---------------------------------------------------------------------------
 
@@ -78,7 +114,7 @@ function computeAggregatedResources(state: AppState): AggregatedResourceData[] {
   if (state.timesheets.length === 0) return [];
 
   const bufferConfigs = buildBufferConfigs(state);
-  return aggregateByResource(state.timesheets, state.config.thresholds, bufferConfigs);
+  return aggregateByResource(enrichTimesheetsWithProjectNames(state), state.config.thresholds, bufferConfigs);
 }
 
 /**
@@ -108,7 +144,7 @@ export const selectFilteredResources = createMemoizedSelector(computeFilteredRes
 
 function computeAggregatedProjects(state: AppState): AggregatedProjectData[] {
   if (state.timesheets.length === 0) return [];
-  return aggregateByProject(state.timesheets, state.workbooks);
+  return aggregateByProject(enrichTimesheetsWithProjectNames(state), state.workbooks);
 }
 
 /**
@@ -124,7 +160,7 @@ function computeAggregatedMonths(state: AppState): AggregatedMonthData[] {
   if (state.timesheets.length === 0) return [];
 
   const bufferConfigs = buildBufferConfigs(state);
-  return aggregateByMonth(state.timesheets, state.workbooks, state.config.thresholds, bufferConfigs);
+  return aggregateByMonth(enrichTimesheetsWithProjectNames(state), state.workbooks, state.config.thresholds, bufferConfigs);
 }
 
 /**
@@ -192,7 +228,16 @@ function computeAvailableProjects(state: AppState): string[] {
 
   for (const timesheet of state.timesheets) {
     for (const entry of timesheet.entries) {
-      projectNames.add(entry.projectName);
+      if (entry.projectName && entry.projectName.trim()) {
+        projectNames.add(entry.projectName.trim());
+      }
+    }
+  }
+
+  // Also include project names from workbook metadata
+  for (const wb of state.workbooks) {
+    if (wb.projectName && wb.projectName.trim() && wb.projectName !== 'Unknown Project') {
+      projectNames.add(wb.projectName.trim());
     }
   }
 
@@ -312,7 +357,7 @@ export function useAggregatedResourceData(): AggregatedResourceData[] {
   return useMemo(() => {
     if (state.timesheets.length === 0) return [];
     const bufferConfigs = buildBufferConfigs(state);
-    return aggregateByResource(state.timesheets, state.config.thresholds, bufferConfigs);
+    return aggregateByResource(enrichTimesheetsWithProjectNames(state), state.config.thresholds, bufferConfigs);
   }, [state.timesheets, state.config.thresholds, state.config.resourceBufferDays, state.config.workingDaysPerMonth, state.config.dailyHourExpectation]);
 }
 
@@ -326,7 +371,7 @@ export function useFilteredResourceData(): AggregatedResourceData[] {
   const aggregated = useMemo(() => {
     if (state.timesheets.length === 0) return [];
     const bufferConfigs = buildBufferConfigs(state);
-    return aggregateByResource(state.timesheets, state.config.thresholds, bufferConfigs);
+    return aggregateByResource(enrichTimesheetsWithProjectNames(state), state.config.thresholds, bufferConfigs);
   }, [state.timesheets, state.config.thresholds, state.config.resourceBufferDays, state.config.workingDaysPerMonth, state.config.dailyHourExpectation]);
 
   return useMemo(
@@ -343,7 +388,7 @@ export function useAggregatedProjectData(): AggregatedProjectData[] {
 
   return useMemo(() => {
     if (state.timesheets.length === 0) return [];
-    return aggregateByProject(state.timesheets, state.workbooks);
+    return aggregateByProject(enrichTimesheetsWithProjectNames(state), state.workbooks);
   }, [state.timesheets, state.workbooks]);
 }
 
@@ -356,7 +401,7 @@ export function useAggregatedMonthData(): AggregatedMonthData[] {
   return useMemo(() => {
     if (state.timesheets.length === 0) return [];
     const bufferConfigs = buildBufferConfigs(state);
-    return aggregateByMonth(state.timesheets, state.workbooks, state.config.thresholds, bufferConfigs);
+    return aggregateByMonth(enrichTimesheetsWithProjectNames(state), state.workbooks, state.config.thresholds, bufferConfigs);
   }, [state.timesheets, state.workbooks, state.config.thresholds, state.config.resourceBufferDays, state.config.workingDaysPerMonth, state.config.dailyHourExpectation]);
 }
 
@@ -370,7 +415,7 @@ export function useDashboardMetrics(): MetricsResult {
   const aggregated = useMemo(() => {
     if (state.timesheets.length === 0) return [];
     const bufferConfigs = buildBufferConfigs(state);
-    return aggregateByResource(state.timesheets, state.config.thresholds, bufferConfigs);
+    return aggregateByResource(enrichTimesheetsWithProjectNames(state), state.config.thresholds, bufferConfigs);
   }, [state.timesheets, state.config.thresholds, state.config.resourceBufferDays, state.config.workingDaysPerMonth, state.config.dailyHourExpectation]);
 
   const filtered = useMemo(
@@ -423,13 +468,21 @@ export function useAvailableProjects(): string[] {
     const projectNames = new Set<string>();
     for (const timesheet of state.timesheets) {
       for (const entry of timesheet.entries) {
-        projectNames.add(entry.projectName);
+        if (entry.projectName && entry.projectName.trim()) {
+          projectNames.add(entry.projectName.trim());
+        }
+      }
+    }
+    // Also include project names from workbook metadata
+    for (const wb of state.workbooks) {
+      if (wb.projectName && wb.projectName.trim() && wb.projectName !== 'Unknown Project') {
+        projectNames.add(wb.projectName.trim());
       }
     }
     return Array.from(projectNames).sort((a, b) =>
       a.toLowerCase().localeCompare(b.toLowerCase())
     );
-  }, [state.timesheets]);
+  }, [state.timesheets, state.workbooks]);
 }
 
 /**
