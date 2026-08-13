@@ -9,7 +9,6 @@ import { FileImport } from '../components/FileImport';
 import { DataSourceList } from '../components/DataSourceList';
 import { FilterBar } from '../components/FilterBar';
 import { MetricsPanel } from '../components/MetricsPanel';
-import { UserTabs } from '../components/UserTabs';
 import { UtilizationBarChart } from '../components/charts/UtilizationBarChart';
 import { DistributionDonutChart } from '../components/charts/DistributionDonutChart';
 import { useFilteredResourceData, useAvailableMonths } from '../state/selectors';
@@ -254,10 +253,9 @@ export function OverviewView() {
 
   return (
     <div className="space-y-6">
-      {/* User Project Tabs — load data from per-user JSON configs */}
-      <UserTabs />
-
       {hasData && <FilterBar />}
+
+      <FileImport />
 
       <FileImport />
 

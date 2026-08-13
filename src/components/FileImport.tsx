@@ -263,10 +263,11 @@ export function FileImport() {
   }, [duplicatePrompt]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6 space-y-6">
+    null
+    /*nsks commented out to remove the manual upload of file and link fetch <div className="w-full max-w-2xl mx-auto p-6 space-y-6">
       <h2 className="text-xl font-semibold text-gray-800">Import Workbook</h2>
 
-      {/* Local File Import */}
+      {/* Local File Import }
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
           Import from Local File
@@ -293,7 +294,7 @@ export function FileImport() {
         </p>
       </div>
 
-      {/* Google Drive Import */}
+      {/* Google Drive Import }
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
           Import from Google Drive
@@ -326,7 +327,7 @@ export function FileImport() {
         </p>
       </div>
 
-      {/* Loading Spinner */}
+      {/* Loading Spinner }
       {isLoading && (
         <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-md" role="status" aria-live="polite">
           <svg
@@ -354,7 +355,7 @@ export function FileImport() {
         </div>
       )}
 
-      {/* Status Messages */}
+      {/* Status Messages }
       {status && !isLoading && (
         <div
           role="alert"
@@ -372,7 +373,7 @@ export function FileImport() {
         </div>
       )}
 
-      {/* Parsing Warnings (Expandable) */}
+      {/* Parsing Warnings (Expandable) }
       {warnings.length > 0 && !isLoading && (
         <div className="border border-amber-200 rounded-md overflow-hidden">
           <button
@@ -411,7 +412,7 @@ export function FileImport() {
         </div>
       )}
 
-      {/* Duplicate Conflict Prompt */}
+      {/* Duplicate Conflict Prompt }
       {duplicatePrompt.visible && (
         <div className="p-4 bg-amber-50 border border-amber-300 rounded-md space-y-3" role="alertdialog" aria-labelledby="duplicate-title" aria-describedby="duplicate-desc">
           <p id="duplicate-title" className="text-sm font-medium text-amber-900">
@@ -438,6 +439,6 @@ export function FileImport() {
           </div>
         </div>
       )}
-    </div>
+    </div>*/
   );
 }

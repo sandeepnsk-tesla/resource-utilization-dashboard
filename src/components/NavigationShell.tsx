@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAppDispatch } from '../state/AppContext';
 import { ConfigPanel } from './ConfigPanel';
+import { UserTabs } from './UserTabs';
 import type { AppState } from '../types/state';
 
 interface NavTab {
@@ -102,6 +103,7 @@ export function NavigationShell() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+        <UserTabs />
         <Outlet />
       </main>
 
