@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "id": "sandeep",
+      "name": "Sandeep",
+      "file": "sandeep.json"
+    },
+    {
+      "id": "arun",
+      "name": "Arun",
+      "file": "arun.json"
+    }
+  ]
+}
