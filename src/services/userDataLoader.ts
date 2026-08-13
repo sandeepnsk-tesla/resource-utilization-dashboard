@@ -12,7 +12,7 @@ import { fetchFromGoogleDrive } from '../parsers/googleDriveFetcher';
 import { parseWorkbook } from '../parsers/excelParserCore';
 
 /** Base path for user config files (relative to the app's public folder) */
-const USERS_BASE_PATH = import.meta.env.BASE_URL + 'users/';
+const USERS_BASE_PATH = (import.meta.env.BASE_URL || '/') + 'users/';
 
 /**
  * Fetches the user registry (list of all users and their config file paths).
