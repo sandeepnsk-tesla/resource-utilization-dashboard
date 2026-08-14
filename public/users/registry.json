@@ -9,6 +9,11 @@
       "id": "suman",
       "name": "Suman",
       "file": "suman.json"
+    },
+    {
+      "id": "vignes",
+      "name": "Vignes",
+      "file": "vignes.json"
     }
   ]
 }
